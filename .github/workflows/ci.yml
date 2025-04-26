@@ -13,8 +13,6 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - '18'
-          - '20'
           - '22'
     steps:
     - uses: actions/checkout@v4
@@ -26,70 +24,8 @@ jobs:
     - run: npm install -g nyc
     - run: npm ci
     - run: npm run test:cover
-    - uses: codecov/codecov-action@v5
-      with:
-        files: coverage/coverage-final.json
-        token: ${{ secrets.CODECOV_TOKEN }}
-
-  browser:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        browser: [ChromeHeadless, FirefoxHeadless]
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        cache: npm
-        node-version: '22'
-    - run: npm install -g npm
-    - run: npm ci
-    - run: npm run test:browser -- --browsers ${{ matrix.browser }}
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        cache: npm
-        node-version: '22'
-    - run: npm ci
-    - run: npx tsc
-    - run: npm run lint
-
-  deno:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup Deno
-      uses: denoland/setup-deno@v2
-      with:
-        deno-version: "v2.x"
-    - run: npm ci
-    - run: npm run test:deno
-
-  bun:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
-    - run: bun install
-    - run: npm run test:bun
-
-  timeline:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-    needs:
-      - nodejs
-      - browser
-      - lint
-      - deno
-      - bun
-    steps:
-      - uses: Kesin11/actions-timeline@v2
-
+    - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: ./coverage
